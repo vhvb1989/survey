@@ -15,7 +15,7 @@ type terminal struct {
 }
 
 func newTerminal(info TerminalInfo) *terminal {
-	t := &terminal{&State{w: info.w}}
+	t := &terminal{newState(info.w)}
 	t.init(info.cols, info.rows)
 	return t
 }
@@ -23,8 +23,8 @@ func newTerminal(info TerminalInfo) *terminal {
 func (t *terminal) init(cols, rows int) {
 	t.numlock = true
 	t.state = t.parse
-	t.cur.attr.fg = DefaultFG
-	t.cur.attr.bg = DefaultBG
+	t.cur.Attr.FG = DefaultFG
+	t.cur.Attr.BG = DefaultBG
 	t.Resize(cols, rows)
 	t.reset()
 }

@@ -100,6 +100,14 @@ type State struct {
 	numlock       bool
 	tabs          []bool
 	title         string
+	colorOverride map[Color]Color
+}
+
+func newState(w io.Writer) *State {
+	return &State{
+		w:             w,
+		colorOverride: make(map[Color]Color),
+	}
 }
 
 func (t *State) logf(format string, args ...interface{}) {
@@ -136,7 +144,16 @@ func (t *State) Unlock() {
 // Cell returns the glyph containing the character code, foreground color, and
 // background color at position (x, y) relative to the top left of the terminal.
 func (t *State) Cell(x, y int) Glyph {
-	return t.lines[y][x]
+	cell := t.lines[y][x]
+	fg, ok := t.colorOverride[cell.FG]
+	if ok {
+		cell.FG = fg
+	}
+	bg, ok := t.colorOverride[cell.BG]
+	if ok {
+		cell.BG = bg
+	}
+	return cell
 }
 
 // Cursor returns the current position of the cursor.
@@ -625,6 +642,14 @@ func (t *State) setAttr(attr []int) {
 				} else {
 					t.logf("bad fgcolor %d\n", attr[i])
 				}
+			} else if i+4 < len(attr) && attr[i+1] == 2 {
+				i += 4
+				r, g, b := attr[i-2], attr[i-1], attr[i]
+				if !between(r, 0, 255) || !between(g, 0, 255) || !between(b, 0, 255) {
+					t.logf("bad fg rgb color (%d,%d,%d)\n", r, g, b)
+				} else {
+					t.cur.Attr.FG = Color(r<<16 | g<<8 | b)
+				}
 			} else {
 				t.logf("gfx attr %d unknown\n", a)
 			}
@@ -637,6 +662,14 @@ func (t *State) setAttr(attr []int) {
 					t.cur.Attr.BG = Color(attr[i])
 				} else {
 					t.logf("bad bgcolor %d\n", attr[i])
+				}
+			} else if i+4 < len(attr) && attr[i+1] == 2 {
+				i += 4
+				r, g, b := attr[i-2], attr[i-1], attr[i]
+				if !between(r, 0, 255) || !between(g, 0, 255) || !between(b, 0, 255) {
+					t.logf("bad bg rgb color (%d,%d,%d)\n", r, g, b)
+				} else {
+					t.cur.Attr.BG = Color(r<<16 | g<<8 | b)
 				}
 			} else {
 				t.logf("gfx attr %d unknown\n", a)
