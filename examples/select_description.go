@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/vhvb1989/survey/v2"
 )
 
 type Meal struct {

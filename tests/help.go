@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/tests/util"
+	"github.com/vhvb1989/survey/v2"
 )
 
 var (
